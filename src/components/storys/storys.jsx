@@ -1,6 +1,6 @@
 import StorysPreview from "./storyesPreview";
 
-const Storys = ({props,openStory,dataStorys}) => {
+const Storys = ({props,openStory,amISawThis,dataStorys}) => {
 
 
   return (
@@ -12,9 +12,9 @@ const Storys = ({props,openStory,dataStorys}) => {
           <span className="arrow-btn"></span>
         </div>
       </div>
-      <div className="storys-contayner">
+      <div className={`storys-contayner`}>
         {dataStorys.map((data, index) => (
-          <StorysPreview onClick={()=>openStory(index)} key={index} {...data} />
+          <StorysPreview see={amISawThis(index)} onClick={()=>openStory(index)} key={index} {...data} />
         ))}
       </div>
     </div>

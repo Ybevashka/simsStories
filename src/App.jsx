@@ -9,8 +9,11 @@ import {FreeMode} from 'swiper/modules'
 import {Swiper, SwiperSlide} from 'swiper/react'
 // import Swiper styles
 import 'swiper/css';
+import Http from "./components/http";
 
 export default function App() {
+    const [stories,setStories] = useState([]);
+    const [storiesSaw,setStoriesSaw] = useState(null)
     const [isVisible, setIsVisible] = useState(false);
     const [timer, setTimer] = useState(0)
     const [touch, setTouch] = useState(false)
@@ -24,93 +27,27 @@ export default function App() {
     timerRef.current = timer
     const touchRef = useRef()
     touchRef.current = touch
-
     const activePageRef = useRef()
     const activeStoryRef = useRef()
     activePageRef.current = activePage
     activeStoryRef.current = activeStory
 
-    const dataStories = [
-        {
-            imageUrl: "https://thesimstree.com/blog/articles/25-01-24/obustroistvo-doma2.png",
-            title: "How it use?",
-            subtitle: "subtitle",
-            media: [
-                {
-                    type: "video",
-                    url: "video.MOV"
-                },
-                {
-                    type: "video",
-                    url: "video2.MOV"
-                },
-
-            ],
-        },
-        {
-            imageUrl: "https://thesimstree.com/blog/articles/25-01-24/image2.jpg",
-            title: "Good News!",
-            subtitle: "subtitle",
-            media: [
-                {
-                    type: "video",
-                    url: "video.MOV"
-                },
-                {
-                    type: "photo",
-                    url: "https://learnersbucket.com/ezoimgfmt/i0.wp.com/learnersbucket.com/wp-content/uploads/2023/09/Percentage-between-two-numbers-in-JavaScript1.png?w=1280&ssl=1&ezimgfmt=ngcb1/notWebP"
-                },
-
-            ],
-        },
-        {
-            imageUrl: "https://thesimstree.com/blog/articles/25-01-24/unusual-houses.png",
-            title: "How create",
-            subtitle: "subtitle",
-            media: [
-                {
-                    type: "video",
-                    url: "video.MOV"
-                },
-            ],
-        },
-        {
-            imageUrl: "https://thesimstree.com/blog/articles/25-01-24/sn.png",
-            title: "Ubdates",
-            subtitle: "subtitle",
-            media: [
-                {
-                    type: "video",
-                    url: "video.MOV"
-                },
-
-            ],
-        },
-        {
-            imageUrl: "https://static.tildacdn.com/stor3066-6637-4635-b235-306432393236/28942791.jpg",
-            title: "О продукте 5",
-            subtitle: "subtitle",
-            media: [
-                {
-                    type: "video",
-                    url: "video.MOV"
-                },
-
-            ],
-        },
-        {
-            imageUrl: "https://static.tildacdn.com/stor3066-6637-4635-b235-306432393236/28942791.jpg",
-            title: "О продукте 6",
-            subtitle: "subtitle",
-            media: [
-                {
-                    type: "video",
-                    url: "video.MOV"
-                },
-            ],
-
-        },
-    ];
+    useEffect(()=>{
+       Http.getList(0).then(r=>{
+           setStories(r)
+       })
+    },[])
+    //Запоминаем, что мы смотрели эту историю
+    const insertSawStory = () =>{
+        let storSaw = storiesSaw ? [...storiesSaw] : [];
+        if(!storSaw.find(x=>x.story_id === stories[activeStory].id && x.page_id === activePage)){
+            storSaw.push({story_id:stories[activeStory].id,page_id:activePage})
+            setStoriesSaw([...storSaw])
+        }
+    }
+    const amISawThis = (index) =>{
+        return storiesSaw ? storiesSaw.filter(x=>x.story_id === stories[index].id).length === stories[index].items.length : false;
+    }
 
 
     // Функция для переключения состояния видимости
@@ -137,9 +74,10 @@ export default function App() {
         }
     },[activeStory,activePage])
     const nextPageOrStory = () => {
-        if ((dataStories[activeStoryRef.current].media.length - 1) > activePageRef.current)
+        insertSawStory();
+        if ((stories[activeStoryRef.current].items.length - 1) > activePageRef.current)
             setActivePage(p => p + 1)
-        else if ((dataStories.length - 1) > activeStoryRef.current) {
+        else if ((stories.length - 1) > activeStoryRef.current) {
             swiperRef.current.slideNext();
             setActivePage(0)
             setActiveStory(s => s + 1)
@@ -165,13 +103,13 @@ export default function App() {
                     return;
                 }
                 if (
-                    dataStories[activeStory].media[activePage].type === "video" &&
+                    stories[activeStory].items[activePage].hasOwnProperty("video")&&
                     activeVideoRef.current &&
                     getPercentOfLook(timerRef.current, activeVideoRef.current.duration) >= 100
                 ) {
                     nextPageOrStory()
                 } else if (
-                    dataStories[activeStory].media[activePage].type !== "video" &&
+                    !stories[activeStory].items[activePage].hasOwnProperty("video") &&
                     activeVideoRef.current && timerRef.current >= 100
                 ) {
                     nextPageOrStory();
@@ -227,14 +165,14 @@ export default function App() {
 
     return (
         <div className="App">
-            <Storys openStory={openStory} dataStorys={dataStories}/>
+            <Storys amISawThis={amISawThis} openStory={openStory} dataStorys={stories}/>
             <div className={`storys-overlay-box ${activeStory !== null ? '' : "d-none"}`}>
                 <div
                     onPointerDown={touchDown}
                     onPointerUp={checkClick}
                     className="storys-content-box">
-                    <TopBar story={activeStory !== null && dataStories[activeStory]} activePage={activePage}
-                            progresses={activeStory !== null && dataStories[activeStory].media}
+                    <TopBar story={activeStory !== null && stories[activeStory]} activePage={activePage}
+                            progresses={activeStory !== null && stories[activeStory].items}
                             timer={
                                 activeVideoRef.current ?
                                     getPercentOfLook(timer, activeVideoRef.current.duration)
@@ -266,7 +204,7 @@ export default function App() {
                         slidesPerView={1}
                         className={"slider"}
                     >
-                        {dataStories.map((x, k) => (
+                        {stories.map((x, k) => (
                             <SwiperSlide
                                 onTouchEnd={() => {
                                 }}
@@ -278,7 +216,7 @@ export default function App() {
                                             index={k}
                                             key={k}
                                             videoRef={videoRef} isMuted={isMuted}
-                                            isOpen={k === activeStory} media={x.media} activePage={activePage}/>
+                                            isOpen={k === activeStory} media={x.items} activePage={activePage}/>
                             </SwiperSlide>
                         ))}
                     </Swiper>

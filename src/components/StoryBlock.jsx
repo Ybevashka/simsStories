@@ -53,13 +53,13 @@ const StoryBlock = ({media,isPause,activeVideoRef,index,activeStory,state,active
                             className={"slider-slide"}
                             key={k}
                         >
-                            {x.type === "photo" ?
+                            {!x.hasOwnProperty("video") ?
                                 <div className={"story-block-img"}>
                                     <img key={k} src={x.url}/>
                                 </div>
                                 :
                                 <VideoBlock isPause={isPause} activeVideoRef={activeVideoRef}
-                                            url={x.url} isMuted={isMuted}
+                                            url={x.video} isMuted={isMuted}
                                             isPlaying={activeStory === index && activePage === k}/>
                             }
                         </SwiperSlide>

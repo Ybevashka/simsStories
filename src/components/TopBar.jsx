@@ -25,11 +25,11 @@ const TopBar = ({closeStory,story, progresses, timer,activePage}) => {
 
             <div className="storys-inform-top">
                 <div className="storys-company">
-                    <img src={story ? story.imageUrl.toString() : ""} alt=""/>
+                    <img src={story ? story.preview.toString() : ""} alt=""/>
                     <div className="storys-company-text">
                         <span className="storys-company-header">{story && story.title}</span>
                         <span className="storys-company-description">
-              {story && story.subtitle}
+              {story && story.subtitle && story.subtitle}
             </span>
                     </div>
                 </div>
