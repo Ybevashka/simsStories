@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 
-const TopBar = ({closeStory, progresses, timer,activePage}) => {
+const TopBar = ({closeStory,story, progresses, timer,activePage}) => {
     const [progress,setProgress] = useState(0);
 
     const amIActiveNow = (index) => {
@@ -25,11 +25,11 @@ const TopBar = ({closeStory, progresses, timer,activePage}) => {
 
             <div className="storys-inform-top">
                 <div className="storys-company">
-                    <img src="12312313.jpeg" alt=""/>
+                    <img src={story ? story.imageUrl.toString() : ""} alt=""/>
                     <div className="storys-company-text">
-                        <span className="storys-company-header">TheSimsTree</span>
+                        <span className="storys-company-header">{story && story.title}</span>
                         <span className="storys-company-description">
-              Save Your History
+              {story && story.subtitle}
             </span>
                     </div>
                 </div>

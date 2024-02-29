@@ -1,8 +1,14 @@
 import Comments from "./components/comments/Comments";
 import Content from "./components/Content";
 import TopBar from "./components/TopBar";
-import React, {useState, useRef, useEffect} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import Storys from "./components/storys/storys";
+import StoryBlock from "./components/StoryBlock";
+// import Swiper JS
+import {FreeMode} from 'swiper/modules'
+import {Swiper, SwiperSlide} from 'swiper/react'
+// import Swiper styles
+import 'swiper/css';
 
 export default function App() {
     const [isVisible, setIsVisible] = useState(false);
@@ -11,6 +17,9 @@ export default function App() {
     const [activeStory, setActiveStory] = useState(null)//Активная история
     const [activePage, setActivePage] = useState(null)//Активная страница в истории
     const [interval, setIntervalTimer] = useState(null)
+    const activeVideoRef = useRef()
+    const blockRef = useRef()
+    const swiperRef = useRef()
     const timerRef = useRef()
     timerRef.current = timer
     const touchRef = useRef()
@@ -25,32 +34,80 @@ export default function App() {
         {
             imageUrl: "https://thesimstree.com/blog/articles/25-01-24/obustroistvo-doma2.png",
             title: "How it use?",
-            media: ["video.MOV", "video2.MOV"],
+            subtitle: "subtitle",
+            media: [
+                {
+                    type: "video",
+                    url: "video.MOV"
+                },
+                {
+                    type: "video",
+                    url: "video2.MOV"
+                },
+
+            ],
         },
         {
             imageUrl: "https://thesimstree.com/blog/articles/25-01-24/image2.jpg",
             title: "Good News!",
-            media: ["video2.MOV"],
+            subtitle: "subtitle",
+            media: [
+                {
+                    type: "video",
+                    url: "video.MOV"
+                },
+                {
+                    type: "photo",
+                    url: "https://learnersbucket.com/ezoimgfmt/i0.wp.com/learnersbucket.com/wp-content/uploads/2023/09/Percentage-between-two-numbers-in-JavaScript1.png?w=1280&ssl=1&ezimgfmt=ngcb1/notWebP"
+                },
+
+            ],
         },
         {
             imageUrl: "https://thesimstree.com/blog/articles/25-01-24/unusual-houses.png",
             title: "How create",
-            media: ["video3.MOV"],
+            subtitle: "subtitle",
+            media: [
+                {
+                    type: "video",
+                    url: "video.MOV"
+                },
+            ],
         },
         {
             imageUrl: "https://thesimstree.com/blog/articles/25-01-24/sn.png",
             title: "Ubdates",
-            media: [],
+            subtitle: "subtitle",
+            media: [
+                {
+                    type: "video",
+                    url: "video.MOV"
+                },
+
+            ],
         },
         {
             imageUrl: "https://static.tildacdn.com/stor3066-6637-4635-b235-306432393236/28942791.jpg",
             title: "О продукте 5",
-            media: [],
+            subtitle: "subtitle",
+            media: [
+                {
+                    type: "video",
+                    url: "video.MOV"
+                },
+
+            ],
         },
         {
             imageUrl: "https://static.tildacdn.com/stor3066-6637-4635-b235-306432393236/28942791.jpg",
             title: "О продукте 6",
-            media: [],
+            subtitle: "subtitle",
+            media: [
+                {
+                    type: "video",
+                    url: "video.MOV"
+                },
+            ],
 
         },
     ];
@@ -66,25 +123,37 @@ export default function App() {
     const videoRef = useRef(null);
     const sourceRef = useRef(null);
 
-    useEffect(() => {
-        const video = videoRef.current;
-
-        if (video && isPlaying) {
-            video.play();
-        } else if (video) {
-            video.pause();
-        }
-    }, [isPlaying]);
 
     const toggleMute = () => {
-        const video = videoRef.current;
-
-        if (video) {
-            video.muted = !isMuted;
             setIsMuted(!isMuted);
-        }
     };
     const closeStories = () => setActiveStory(null)
+    const getPercentOfLook = (timer, duration) => {
+        return Math.ceil(timer / (duration) * 100);
+    }
+    useEffect(()=>{
+        if(activeStory !== null && activePage !== null){
+            setTimer(0)
+        }
+    },[activeStory,activePage])
+    const nextPageOrStory = () => {
+        if ((dataStories[activeStoryRef.current].media.length - 1) > activePageRef.current)
+            setActivePage(p => p + 1)
+        else if ((dataStories.length - 1) > activeStoryRef.current) {
+            swiperRef.current.slideNext();
+            setActivePage(0)
+            setActiveStory(s => s + 1)
+        } else closeStories();
+    }
+    const prevPageOrStory = () => {
+        if (activePage > 0) {
+            setActivePage(p => p - 1);
+        } else if (activeStory > 0) {
+            swiperRef.current.slidePrev();
+            setActivePage(0)
+            setActiveStory(s => s - 1);
+        } else closeStories();
+    }
     useEffect(() => {
         if (activeStory === null && interval) {
             setTimer(0)
@@ -92,80 +161,86 @@ export default function App() {
             setIntervalTimer(null)
         } else if (activeStory !== null && !interval) {
             const intervalTimer = setInterval(() => {
-                if(touchRef.current || isVisible)
+                if (touchRef.current || isVisible) {
                     return;
-                if (timerRef.current >= 100) {
-
-
-                    setTimer(0)
-                    if ((dataStories[activeStoryRef.current].media.length-1) > activePageRef.current)
-                        setActivePage(p => p + 1)
-                    else if ((dataStories.length-1) > activeStoryRef.current) {
-                        setActivePage(0)
-                        setActiveStory(s => s + 1)
-                    }
-                    else closeStories();
-
-                } else {
-                    setTimer(v => v + 1.5);
                 }
-            }, 50)
+                if (
+                    dataStories[activeStory].media[activePage].type === "video" &&
+                    activeVideoRef.current &&
+                    getPercentOfLook(timerRef.current, activeVideoRef.current.duration) >= 100
+                ) {
+                    nextPageOrStory()
+                } else if (
+                    dataStories[activeStory].media[activePage].type !== "video" &&
+                    activeVideoRef.current && timerRef.current >= 100
+                ) {
+                    nextPageOrStory();
+                } else {
+                    setTimer(v => v + .1);
+                }
+            }, 100)
             setIntervalTimer(intervalTimer)
         }
     }, [activeStory])
-    useEffect(()=>{
-        if(activeStory !== null && activePage !== null){
-            sourceRef.current.setAttribute('src', dataStories[activeStory].media[activePage]);
 
-            videoRef.current.load();
-            videoRef.current.play();
-        }
-    },[activeStory,activePage])
-    const togglePlay = () => {
-        setIsPlaying(!isPlaying);
-    };
+
     const openStory = (story) => {
         setTimer(0)
         setActivePage(0);
         setActiveStory(story)
+        swiperRef.current.slideTo(story)
     }
-    const checkClick = (e) =>{
-        let trg = videoRef.current.getBoundingClientRect();
-        let x = e.clientX - trg.left; //x position within the element.
-        if(x > (trg.width - 50)){
-            if(dataStories[activeStory].media.length -1 > activePage)
-                setActivePage(p=>p+1)
-            else if(activeStory < dataStories.length-1) {
-                setActivePage(0)
-                setActiveStory(s => s + 1);
-            }
-            else closeStories();
-            setTimer(0)
+    useEffect(()=>{
+        if(!isVisible)
+            setTouch(false);
+    },[isVisible])
+    const touchDown = e =>{
+        let target = e.target;
+        if (
+            target.parentElement.className === "storys-content-right" ||
+            target.parentElement.parentElement.className === "storys-content-right" ||
+            isVisible
+        ) {
+            return;
         }
-        else if(x <  50){
-            if(activePage > 0)
-                setActivePage(p=>p-1);
-            else if(activeStory > 0) {
-                setActivePage(0)
-                setActiveStory(s => s - 1);
+        setTouch(true)
+    }
+    const checkClick = (e) => {
+        let target = e.target;
+            if (
+                target.parentElement.className === "storys-content-right" ||
+                target.parentElement.parentElement.className === "storys-content-right" ||
+                isVisible
+            ) {
+                return;
             }
-            else closeStories();
-            setTimer(0)
+        let trg = blockRef.current.getBoundingClientRect();
+        let x = e.clientX - trg.left; //x position within the element.
+
+        if (x > (trg.width - 50)) {
+            nextPageOrStory();
+        } else if (x < 50) {
+            prevPageOrStory();
         }
         setTouch(false);
     }
+
     return (
         <div className="App">
             <Storys openStory={openStory} dataStorys={dataStories}/>
-            {activePage}
             <div className={`storys-overlay-box ${activeStory !== null ? '' : "d-none"}`}>
                 <div
-                    onPointerDown={()=>setTouch(true)}
+                    onPointerDown={touchDown}
                     onPointerUp={checkClick}
                     className="storys-content-box">
-                    <TopBar activePage={activePage}
+                    <TopBar story={activeStory !== null && dataStories[activeStory]} activePage={activePage}
                             progresses={activeStory !== null && dataStories[activeStory].media}
-                            timer={timer}
+                            timer={
+                                activeVideoRef.current ?
+                                    getPercentOfLook(timer, activeVideoRef.current.duration)
+                                    :
+                                    timer
+                            }
                             closeStory={closeStories}/>
                     <Content
                         onClick={toggleVisibility}
@@ -175,26 +250,39 @@ export default function App() {
 
                     {isVisible && <Comments onClick={toggleVisibility}/>}
 
-                    <video
-                        className="storys-video"
-                        preload="metadata"
-                        ref={videoRef}
-                        loop
-                        playsInline
-                        autoPlay
-                        no-controls="true"
-                        muted={isMuted}
-                        style={{
-                            backgroundImage: "url('12312313.jpeg')",
-                            objectFit: "cover",
+
+                    <Swiper
+                        ref={blockRef}
+                        onSwiper={ref => swiperRef.current = ref}
+                        freeMode={{
+                            enabled: true
                         }}
+                        onTouchEnd={() => {
+                        }}
+                        modules={[FreeMode]}
+                        onTouchStart={() => {
+                        }}
+                        spaceBetween={0}
+                        slidesPerView={1}
+                        className={"slider"}
                     >
-                        <source ref={sourceRef}/>
-                        {/*{activeStory !== null && dataStories[activeStory].media.map((item,key)=>(
-                            <source src={item} key={key}/>
-                        ))}*/}
-                        Your browser does not support the video tag.
-                    </video>
+                        {dataStories.map((x, k) => (
+                            <SwiperSlide
+                                onTouchEnd={() => {
+                                }}
+                                className={"slider-slide"}
+                                key={k}
+                            >
+                                <StoryBlock isPause={isVisible || touch} activeVideoRef={activeVideoRef}
+                                            activeStory={activeStory}
+                                            index={k}
+                                            key={k}
+                                            videoRef={videoRef} isMuted={isMuted}
+                                            isOpen={k === activeStory} media={x.media} activePage={activePage}/>
+                            </SwiperSlide>
+                        ))}
+                    </Swiper>
+
                 </div>
             </div>
         </div>
