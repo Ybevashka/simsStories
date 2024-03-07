@@ -1,17 +1,17 @@
 const CommentsItem = (props) => {
-    const { avatarSrc, name, time, commentText } = props.data;
+    const { comment,created_at } = props.data;
 
     return (
         <div className="storys-comments-item">
         <div className="storys-avatar">
-            <img src={avatarSrc} alt="" />
+            <img alt="" />
         </div>
         <div className="storys-comments-item-data">
             <div className="storys-comments-item-data-header">
-            <span className="name">{name}</span>
-            <span className="time">{time}</span>
+            <span className="name"></span>
+            <span className="time">{new Date(created_at).toLocaleString()}</span>
             </div>
-            <div className="comment-text">{commentText}</div>
+            <div className="comment-text">{comment}</div>
         </div>
         </div>
     );

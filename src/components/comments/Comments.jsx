@@ -1,70 +1,31 @@
 import CommentsItem from "./CommentsItem";
+import {useEffect, useState} from "react";
+import http from "../http";
 
-const Comments = (props) => {
-  const commentsData = [
-    {
-      avatarSrc:
-        "https://pixelbox.ru/wp-content/uploads/2021/02/mult-ava-instagram-2.jpg",
-      name: "Ольга Пруфина",
-      time: "45 мин.",
-      commentText: "Интересная новость! Как можно оформить подписку?",
-    },
-    {
-      avatarSrc: "./12312313.jpeg",
-      name: "TheSimsTree",
-      time: "1 час",
-      commentText:
-        "Ни чего себе, даже сложно представить что наконец-то появился такой функционал!!",
-    },
-    {
-      avatarSrc:
-        "https://pixelbox.ru/wp-content/uploads/2021/02/mult-ava-instagram-2.jpg",
-      name: "Ольга Пруфина",
-      time: "45 мин.",
-      commentText: "Интересная новость! Как можно оформить подписку?",
-    },
-    {
-      avatarSrc: "./12312313.jpeg",
-      name: "TheSimsTree",
-      time: "1 час",
-      commentText:
-        "Ни чего себе, даже сложно представить что наконец-то появился такой функционал!!",
-    },
-    {
-      avatarSrc:
-        "https://pixelbox.ru/wp-content/uploads/2021/02/mult-ava-instagram-2.jpg",
-      name: "Ольга Пруфина",
-      time: "45 мин.",
-      commentText: "Интересная новость! Как можно оформить подписку?",
-    },
-    {
-      avatarSrc: "./12312313.jpeg",
-      name: "TheSimsTree",
-      time: "1 час",
-      commentText:
-        "Ни чего себе, даже сложно представить что наконец-то появился такой функционал!!",
-    },
-    // Добавьте еще объекты данных по необходимости
-  ];
-
+const Comments = ({onClick,comments,comment,setComment,sendComment}) => {
   return (
     <div className="storys-comments">
       <div className="storys-comments-header">
         <h4>Комментарии </h4>
-        <span onClick={props.onClick}>Закрыть</span>
+        <span onClick={onClick}>Закрыть</span>
       </div>
 
       <div className="storys-comments-body">
-        {commentsData.map((comment, index) => (
-          <CommentsItem key={index} data={comment} />
-        ))}
+        {comments === null && "Loading..."}
+        {comments !== null && comments.length === 0 && "Empty"}
+          {comments && comments.map((x,k)=>(
+              <CommentsItem key={k} data={x} />
+          ))}
+        {/*{commentsData.map((comment, index) => (
+
+        ))}*/}
       </div>
 
       <div className="storys-comments-footer">
-        <div className="comment-field">
-          <span>Введите комментарий</span>
+        <div className="w-100">
+         <input value={comment} onChange={setComment} className="comment-field w-100"/>
         </div>
-        <span className="comment-btn">
+        <span onClick={sendComment} className="comment-btn">
           <img src="./img/send-svgrepo-com.svg" alt="" />
         </span>
       </div>

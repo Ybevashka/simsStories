@@ -10,11 +10,15 @@ import {Swiper, SwiperSlide} from 'swiper/react'
 // import Swiper styles
 import 'swiper/css';
 import Http from "./components/http";
+import http from "./components/http";
+import comments from "./components/comments/Comments";
 
 export default function App() {
     const [stories,setStories] = useState([]);
     const [storiesSaw,setStoriesSaw] = useState(null)
+    const [comments,setComments] = useState(null)
     const [isVisible, setIsVisible] = useState(false);
+    const [comment,setComment] = useState("")
     const [timer, setTimer] = useState(0)
     const [touch, setTouch] = useState(false)
     const [activeStory, setActiveStory] = useState(null)//Активная история
@@ -71,8 +75,11 @@ export default function App() {
     useEffect(()=>{
         if(activeStory !== null && activePage !== null){
             setTimer(0)
+        }else{
+            setComment("")
         }
     },[activeStory,activePage])
+
     const nextPageOrStory = () => {
         insertSawStory();
         if ((stories[activeStoryRef.current].items.length - 1) > activePageRef.current)
@@ -98,6 +105,9 @@ export default function App() {
             clearInterval(interval)
             setIntervalTimer(null)
         } else if (activeStory !== null && !interval) {
+            http.getCommentStory(stories[activeStory].id,1).then(r=>{
+                setComments(r)
+            })
             const intervalTimer = setInterval(() => {
                 if (touchRef.current || isVisible) {
                     return;
@@ -114,7 +124,7 @@ export default function App() {
                 ) {
                     nextPageOrStory();
                 } else {
-                    setTimer(v => v + .1);
+                    //setTimer(v => v + .1);
                 }
             }, 100)
             setIntervalTimer(intervalTimer)
@@ -163,6 +173,28 @@ export default function App() {
         setTouch(false);
     }
 
+    const likeStory = () =>{
+        let strs = [...stories];
+        strs[activeStory].wasLiked = !strs[activeStory].wasLiked;
+        strs[activeStory].likes += strs[activeStory].wasLiked ? 1 : -1;
+        setStories([...strs]);
+        if(strs[activeStory].wasLiked)
+            http.likeStory(stories[activeStory].id,1)
+        else
+            http.unlikeStory(stories[activeStory].id,1)
+    }
+    const sendComment = () =>{
+        if(comment){
+            let cmts = [...comments];
+            http.commentStory(stories[activeStory].id,1,comment).then(r=>{
+                cmts = [r,...cmts];
+                setComments(cmts)
+            });
+            setComment('')
+        }
+
+    }
+
     return (
         <div className="App">
             <Storys amISawThis={amISawThis} openStory={openStory} dataStorys={stories}/>
@@ -181,12 +213,22 @@ export default function App() {
                             }
                             closeStory={closeStories}/>
                     <Content
+                        likeStory={likeStory}
+
+                        comments={stories[activeStory] && stories[activeStory].comments}
+                        likes={stories[activeStory] && stories[activeStory].likes}
+                        wasLiked={stories[activeStory] && stories[activeStory].wasLiked}
                         onClick={toggleVisibility}
                         isMuted={isMuted}
                         onToggleMute={toggleMute}
                     />
 
-                    {isVisible && <Comments onClick={toggleVisibility}/>}
+                    {isVisible && <Comments
+                        comment={comment}
+                        setComment={(e)=>setComment(e.currentTarget.value)}
+                        comments={comments}
+                        sendComment={sendComment}
+                        onClick={toggleVisibility}/>}
 
 
                     <Swiper

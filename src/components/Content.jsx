@@ -1,4 +1,4 @@
-const Content = ({ isMuted, onToggleMute, onClick }) => {
+const Content = ({ isMuted,likeStory,likes,comments,wasLiked, onToggleMute, onClick }) => {
   return (
     <div className="storys-content">
       <div className="storys-content-left"></div>
@@ -12,13 +12,17 @@ const Content = ({ isMuted, onToggleMute, onClick }) => {
 
           <div className="storys-icon-text">93</div>
         </div>
-        <div className="storys-object">
-          <img src="./img/heart-active.png" alt="" />
-          <div className="storys-icon-text">654</div>
+        <div onClick={likeStory} className="storys-object">
+          {wasLiked ?
+              <img src="./img/heart-active.png" alt="" />
+              :
+              <img src="./img/heart.png" alt="" />
+          }
+          <div className="storys-icon-text">{likes}</div>
         </div>
         <div className="storys-object" onClick={onClick}>
           <img src="./img/comment.png" alt="" />
-          <div className="storys-icon-text">22</div>
+          <div className="storys-icon-text">{comments}</div>
         </div>
         <div className="storys-object">
           <img src="./img/share.png" alt="" />
