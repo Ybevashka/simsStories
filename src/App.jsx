@@ -124,7 +124,7 @@ export default function App() {
                 ) {
                     nextPageOrStory();
                 } else {
-                    //setTimer(v => v + .1);
+                    setTimer(v => v + .1);
                 }
             }, 100)
             setIntervalTimer(intervalTimer)
